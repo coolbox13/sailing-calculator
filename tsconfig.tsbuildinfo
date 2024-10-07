@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/setuptests.ts","./src/vite-env.d.ts","./src/components/sailingcalculator.tsx","./src/components/sailingform.tsx","./src/components/settingsdialog.tsx","./src/utils/calculations.test.ts","./src/utils/calculations.ts"],"version":"5.6.2"}
