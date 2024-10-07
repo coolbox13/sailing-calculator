@@ -1,10 +1,7 @@
 // src/components/SailingForm.tsx
 
 import React from 'react';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { TextField, Grid, Switch, FormControlLabel } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { Field, FormikProps } from 'formik';
 
@@ -22,15 +19,11 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
         control={
           <Switch
             checked={values.useMetric}
-            onChange={(e) => {
-              setFieldValue('useMetric', e.target.checked);
-            }}
+            onChange={(e) => setFieldValue('useMetric', e.target.checked)}
             name="useMetric"
           />
         }
-        label={
-          values.useMetric ? 'Metrisch (km, km/u)' : 'Nautisch (zeemijl, knopen)'
-        }
+        label={values.useMetric ? 'Metrisch (km, km/u)' : 'Nautisch (zeemijl, knopen)'}
       />
       <Grid container spacing={2}>
         {/* Start Time */}
@@ -39,17 +32,12 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             label="Starttijd"
             ampm={false}
             value={values.startTime}
-            onChange={(newValue) => {
-              setFieldValue('startTime', newValue);
-            }}
+            onChange={(newValue) => setFieldValue('startTime', newValue)}
             slotProps={{
               textField: {
                 fullWidth: true,
                 error: touched.startTime && !!errors.startTime,
-                helperText:
-                  touched.startTime && typeof errors.startTime === 'string'
-                    ? errors.startTime
-                    : undefined,
+                helperText: touched.startTime && typeof errors.startTime === 'string' ? errors.startTime : undefined,
               },
             }}
           />
@@ -61,24 +49,19 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             label="Gewenste aankomsttijd"
             ampm={false}
             value={values.arrivalTime}
-            onChange={(newValue) => {
-              setFieldValue('arrivalTime', newValue);
-            }}
+            onChange={(newValue) => setFieldValue('arrivalTime', newValue)}
             slotProps={{
               textField: {
                 fullWidth: true,
                 error: touched.arrivalTime && !!errors.arrivalTime,
-                helperText:
-                  touched.arrivalTime && typeof errors.arrivalTime === 'string'
-                    ? errors.arrivalTime
-                    : undefined,
+                helperText: touched.arrivalTime && typeof errors.arrivalTime === 'string' ? errors.arrivalTime : undefined,
               },
             }}
           />
         </Grid>
 
         {/* Distance */}
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <Field name="distance">
             {({ field }: any) => (
               <TextField
@@ -87,18 +70,31 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
                 type="number"
                 fullWidth
                 error={touched.distance && !!errors.distance}
-                helperText={
-                  touched.distance && typeof errors.distance === 'string'
-                    ? errors.distance
-                    : undefined
-                }
+                helperText={touched.distance && typeof errors.distance === 'string' ? errors.distance : undefined}
+              />
+            )}
+          </Field>
+        </Grid>
+
+        {/* Fuel Consumption */}
+        <Grid item xs={12} sm={6}>
+          <Field name="fuelConsumption">
+            {({ field }: any) => (
+              <TextField
+                {...field}
+                label="Brandstofverbruik (liter/uur)"
+                type="number"
+                fullWidth
+                defaultValue={5}
+                error={touched.fuelConsumption && !!errors.fuelConsumption}
+                helperText={touched.fuelConsumption && typeof errors.fuelConsumption === 'string' ? errors.fuelConsumption : undefined}
               />
             )}
           </Field>
         </Grid>
 
         {/* Sail Speed */}
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <Field name="sailSpeed">
             {({ field }: any) => (
               <TextField
@@ -107,18 +103,14 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
                 type="number"
                 fullWidth
                 error={touched.sailSpeed && !!errors.sailSpeed}
-                helperText={
-                  touched.sailSpeed && typeof errors.sailSpeed === 'string'
-                    ? errors.sailSpeed
-                    : undefined
-                }
+                helperText={touched.sailSpeed && typeof errors.sailSpeed === 'string' ? errors.sailSpeed : undefined}
               />
             )}
           </Field>
         </Grid>
 
         {/* Motor Speed */}
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <Field name="motorSpeed">
             {({ field }: any) => (
               <TextField
@@ -127,11 +119,7 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
                 type="number"
                 fullWidth
                 error={touched.motorSpeed && !!errors.motorSpeed}
-                helperText={
-                  touched.motorSpeed && typeof errors.motorSpeed === 'string'
-                    ? errors.motorSpeed
-                    : undefined
-                }
+                helperText={touched.motorSpeed && typeof errors.motorSpeed === 'string' ? errors.motorSpeed : undefined}
               />
             )}
           </Field>

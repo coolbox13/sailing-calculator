@@ -24,20 +24,47 @@ interface Settings {
   defaultMotorSpeed: number;
 }
 
+const SETTINGS_KEY = 'sailingCalculatorSettings';
+
 const SailingCalculator: React.FC = () => {
   const [result, setResult] = useState<string>('');
-  const [settings, setSettings] = useState<Settings>({
-    useMetric: false,
-    maxDistance: 1000,
-    maxSailSpeed: 20,
-    maxMotorSpeed: 30,
-    fuelConsumption: 5,
-    defaultStartTime: '08:00',
-    defaultArrivalTime: '12:00',
-    defaultDistance: 25,
-    defaultSailSpeed: 5,
-    defaultMotorSpeed: 8,
-  });
+  
+  const loadSettings = (): Settings => {
+    const storedSettings = localStorage.getItem(SETTINGS_KEY);
+    return storedSettings ? JSON.parse(storedSettings) : {
+      useMetric: false,
+      maxDistance: 1000,
+      maxSailSpeed: 20,
+      maxMotorSpeed: 30,
+      fuelConsumption: 5,
+      defaultStartTime: '08:00',
+      defaultArrivalTime: '12:00',
+      defaultDistance: 25,
+      defaultSailSpeed: 5,
+      defaultMotorSpeed: 8,
+    };
+  };
+
+  const [settings, setSettings] = useState<Settings>(loadSettings);
+
+  useEffect(() => {
+    document.title = 'SailingCalculator';
+  }, []);
+
+  const saveSettings = (newSettings: Settings) => {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+  };
+
+  const handleSettingsUpdate = (newSettings: Settings) => {
+    setSettings(newSettings);
+    saveSettings(newSettings);
+
+    // Trigger a recalculation using the current form values
+    if (formikRef.current) {
+      const currentValues = formikRef.current.values;
+      handleCalculate(currentValues);
+    }
+  };
 
   const validationSchema = Yup.object({
     startTime: Yup.date().required('Starttijd is verplicht'),
@@ -45,8 +72,7 @@ const SailingCalculator: React.FC = () => {
       .required('Aankomsttijd is verplicht')
       .test('is-after-start', 'Aankomsttijd moet na de starttijd zijn', function (value) {
         const { startTime } = this.parent;
-        if (!startTime || !value) return true;
-        return true;
+        return startTime && value ? value > startTime : true;
       }),
     distance: Yup.number()
       .required('Afstand is verplicht')
@@ -62,8 +88,7 @@ const SailingCalculator: React.FC = () => {
       .max(settings.maxMotorSpeed, `Motorsnelheid moet kleiner zijn dan ${settings.maxMotorSpeed}`)
       .test('is-greater-than-sailSpeed', 'Motorsnelheid moet groter zijn dan zeilsnelheid', function (value) {
         const { sailSpeed } = this.parent;
-        if (!sailSpeed || !value) return true;
-        return value > sailSpeed;
+        return sailSpeed && value ? value > sailSpeed : true;
       }),
   });
 
@@ -86,20 +111,6 @@ const SailingCalculator: React.FC = () => {
       settings,
     });
     setResult(resultText);
-  };
-
-  const handleSettingsUpdate = (newSettings: Settings) => {
-    setSettings(newSettings);
-    formikRef.current?.resetForm({
-      values: {
-        startTime: parseTimeString(newSettings.defaultStartTime),
-        arrivalTime: parseTimeString(newSettings.defaultArrivalTime),
-        distance: newSettings.defaultDistance,
-        sailSpeed: newSettings.defaultSailSpeed,
-        motorSpeed: newSettings.defaultMotorSpeed,
-        useMetric: newSettings.useMetric,
-      },
-    });
   };
 
   return (
