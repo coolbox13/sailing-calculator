@@ -16,7 +16,7 @@ interface Settings {
   maxDistance: number;
   maxSailSpeed: number;
   maxMotorSpeed: number;
-  fuelConsumption: number;
+  defaultFuelConsumption: number;
   defaultStartTime: string;
   defaultArrivalTime: string;
   defaultDistance: number;
@@ -28,43 +28,50 @@ const SETTINGS_KEY = 'sailingCalculatorSettings';
 
 const SailingCalculator: React.FC = () => {
   const [result, setResult] = useState<string>('');
-  
-  const loadSettings = (): Settings => {
+  const [settings, setSettings] = useState<Settings>(() => {
     const storedSettings = localStorage.getItem(SETTINGS_KEY);
-    return storedSettings ? JSON.parse(storedSettings) : {
-      useMetric: false,
-      maxDistance: 1000,
-      maxSailSpeed: 20,
-      maxMotorSpeed: 30,
-      fuelConsumption: 5,
-      defaultStartTime: '08:00',
-      defaultArrivalTime: '12:00',
-      defaultDistance: 25,
-      defaultSailSpeed: 5,
-      defaultMotorSpeed: 8,
-    };
-  };
-
-  const [settings, setSettings] = useState<Settings>(loadSettings);
-
-  useEffect(() => {
-    document.title = 'SailingCalculator';
-  }, []);
+    const parsedSettings = storedSettings
+      ? JSON.parse(storedSettings)
+      : {
+          useMetric: false,
+          maxDistance: 1000,
+          maxSailSpeed: 20,
+          maxMotorSpeed: 30,
+          defaultFuelConsumption: 5,
+          defaultStartTime: '08:00',
+          defaultArrivalTime: '12:00',
+          defaultDistance: 25,
+          defaultSailSpeed: 5,
+          defaultMotorSpeed: 8,
+        };
+    console.log('Loaded settings from storage:', parsedSettings);
+    return parsedSettings;
+  });
 
   const saveSettings = (newSettings: Settings) => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+    // Only save the default settings, excluding any 'live' runtime variables
+    const settingsToSave = {
+      useMetric: newSettings.useMetric,
+      maxDistance: newSettings.maxDistance,
+      maxSailSpeed: newSettings.maxSailSpeed,
+      maxMotorSpeed: newSettings.maxMotorSpeed,
+      defaultFuelConsumption: newSettings.defaultFuelConsumption,
+      defaultStartTime: newSettings.defaultStartTime,
+      defaultArrivalTime: newSettings.defaultArrivalTime,
+      defaultDistance: newSettings.defaultDistance,
+      defaultSailSpeed: newSettings.defaultSailSpeed,
+      defaultMotorSpeed: newSettings.defaultMotorSpeed,
+    };
+    console.log('Saving settings to storage:', settingsToSave);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settingsToSave));
   };
 
-  const handleSettingsUpdate = (newSettings: Settings) => {
+  function handleSettingsUpdate(newSettings: Settings) {
+    console.log('Updating settings:', newSettings);
     setSettings(newSettings);
     saveSettings(newSettings);
-
-    // Trigger a recalculation using the current form values
-    if (formikRef.current) {
-      const currentValues = formikRef.current.values;
-      handleCalculate(currentValues);
-    }
-  };
+    formikRef.current?.setFieldValue('fuelConsumption', newSettings.defaultFuelConsumption);
+  }
 
   const validationSchema = Yup.object({
     startTime: Yup.date().required('Starttijd is verplicht'),
@@ -78,6 +85,10 @@ const SailingCalculator: React.FC = () => {
       .required('Afstand is verplicht')
       .positive('Afstand moet groter zijn dan 0')
       .max(settings.maxDistance, `Afstand moet kleiner zijn dan ${settings.maxDistance}`),
+    fuelConsumption: Yup.number()
+      .required('Brandstofverbruik is verplicht')
+      .positive('Brandstofverbruik moet groter zijn dan 0')
+      .max(50, 'Brandstofverbruik moet kleiner zijn dan 50 liter/uur'),
     sailSpeed: Yup.number()
       .required('Zeilsnelheid is verplicht')
       .positive('Zeilsnelheid moet groter zijn dan 0')
@@ -106,17 +117,23 @@ const SailingCalculator: React.FC = () => {
   };
 
   const handleCalculate = (values: any) => {
+    console.log('Calculating with values:', values);
     const resultText = calculateSailingPlan({
       ...values,
-      settings,
+      settings: { ...settings, fuelConsumption: values.fuelConsumption || settings.defaultFuelConsumption },
     });
+    console.log('Calculated result:', resultText);
     setResult(resultText);
   };
+
+  useEffect(() => {
+    document.title = 'SailingCalculator';
+  }, []);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={nlLocale}>
       <Typography variant="h4" align="center" gutterBottom>
-        Zeilen of Motor Berekening
+        Zeilen of Motoren
         <SettingsDialog settings={settings} onUpdate={handleSettingsUpdate} />
       </Typography>
       <Formik
@@ -125,6 +142,7 @@ const SailingCalculator: React.FC = () => {
           startTime: parseTimeString(settings.defaultStartTime),
           arrivalTime: parseTimeString(settings.defaultArrivalTime),
           distance: settings.defaultDistance,
+          fuelConsumption: settings.defaultFuelConsumption,
           sailSpeed: settings.defaultSailSpeed,
           motorSpeed: settings.defaultMotorSpeed,
           useMetric: settings.useMetric,
@@ -136,12 +154,30 @@ const SailingCalculator: React.FC = () => {
           const { values } = formikProps;
 
           useEffect(() => {
+            console.log("Recalculation triggered:");
+            console.log("startTime:", values.startTime);
+            console.log("arrivalTime:", values.arrivalTime);
+            console.log("distance:", values.distance);
+            console.log("fuelConsumption:", values.fuelConsumption);
+            console.log("sailSpeed:", values.sailSpeed);
+            console.log("motorSpeed:", values.motorSpeed);
+            console.log("useMetric:", values.useMetric);
+            
             if (formikProps.isValid) {
               handleCalculate(formikProps.values);
             } else {
               setResult('');
             }
-          }, [values, formikProps.isValid]);
+          }, [
+            values.startTime,
+            values.arrivalTime,
+            values.distance,
+            values.fuelConsumption,
+            values.sailSpeed,
+            values.motorSpeed,
+            values.useMetric,
+            formikProps.isValid,
+          ]);
 
           return (
             <Form>
@@ -155,7 +191,7 @@ const SailingCalculator: React.FC = () => {
           <Typography variant="h5" gutterBottom style={{ marginTop: '20px' }}>
             Uitkomst
           </Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" component="div">
             <div dangerouslySetInnerHTML={{ __html: result }} />
           </Typography>
         </>

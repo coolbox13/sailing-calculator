@@ -26,7 +26,6 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
         label={values.useMetric ? 'Metrisch (km, km/u)' : 'Nautisch (zeemijl, knopen)'}
       />
       <Grid container spacing={2}>
-        {/* Start Time */}
         <Grid item xs={12} sm={6}>
           <TimePicker
             label="Starttijd"
@@ -42,8 +41,6 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             }}
           />
         </Grid>
-
-        {/* Arrival Time */}
         <Grid item xs={12} sm={6}>
           <TimePicker
             label="Gewenste aankomsttijd"
@@ -59,8 +56,6 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             }}
           />
         </Grid>
-
-        {/* Distance */}
         <Grid item xs={12} sm={6}>
           <Field name="distance">
             {({ field }: any) => (
@@ -75,8 +70,6 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             )}
           </Field>
         </Grid>
-
-        {/* Fuel Consumption */}
         <Grid item xs={12} sm={6}>
           <Field name="fuelConsumption">
             {({ field }: any) => (
@@ -85,15 +78,13 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
                 label="Brandstofverbruik (liter/uur)"
                 type="number"
                 fullWidth
-                defaultValue={5}
+                //defaultValue={settings.defaultFuelConsumption} // Ensure default value is set
                 error={touched.fuelConsumption && !!errors.fuelConsumption}
                 helperText={touched.fuelConsumption && typeof errors.fuelConsumption === 'string' ? errors.fuelConsumption : undefined}
               />
             )}
           </Field>
         </Grid>
-
-        {/* Sail Speed */}
         <Grid item xs={12} sm={6}>
           <Field name="sailSpeed">
             {({ field }: any) => (
@@ -108,8 +99,6 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             )}
           </Field>
         </Grid>
-
-        {/* Motor Speed */}
         <Grid item xs={12} sm={6}>
           <Field name="motorSpeed">
             {({ field }: any) => (

@@ -20,7 +20,7 @@ interface Settings {
   maxDistance: number;
   maxSailSpeed: number;
   maxMotorSpeed: number;
-  fuelConsumption: number; // Added fuel consumption
+  defaultFuelConsumption: number;
   defaultStartTime: string;
   defaultArrivalTime: string;
   defaultDistance: number;
@@ -151,12 +151,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ settings, onUpdate }) =
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Brandstofverbruik (liter per uur)"
+                label="Standaard brandstofverbruik (liter per uur)"
                 type="number"
                 fullWidth
-                value={localSettings.fuelConsumption}
+                value={localSettings.defaultFuelConsumption}
                 onChange={(e) =>
-                  setLocalSettings({ ...localSettings, fuelConsumption: Number(e.target.value) })
+                  setLocalSettings({ ...localSettings, defaultFuelConsumption: Number(e.target.value) })
                 }
               />
             </Grid>

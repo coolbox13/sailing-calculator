@@ -1,5 +1,6 @@
 import { differenceInMinutes, addDays, addMinutes, format } from 'date-fns';
 
+// Define the CalculationParams interface
 interface CalculationParams {
   startTime: Date;
   arrivalTime: Date;
@@ -51,15 +52,8 @@ export const calculateSailingPlan = (params: CalculationParams): string => {
   const numerator = totalTimeInHours - (dist / motorSpd);
   const denominator = 1 - k;
 
-  let t_sail = numerator / denominator;
-
-  if (denominator === 0) {
-    // sailSpeed equals motorSpeed, cannot calculate changeover point
-    t_sail = 0; // Can't sail if speeds are equal and sailing alone isn't possible
-  }
-
+  let t_sail = denominator === 0 ? 0 : numerator / denominator;
   if (t_sail >= 0 && t_sail <= totalTimeInHours) {
-    // Sailing and motoring combination feasible
     const t_motor = totalTimeInHours - t_sail;
     const distanceSailed = sailSpd * t_sail;
     const remainingDistance = dist - distanceSailed;
@@ -95,7 +89,8 @@ export const calculateSailingPlan = (params: CalculationParams): string => {
   `;
 };
 
-const formatTime = (hours: number) => {
+// Add the formatTime function here
+const formatTime = (hours: number): string => {
   const wholeHours = Math.floor(hours);
   const minutes = Math.round((hours - wholeHours) * 60);
   return `${wholeHours} uur${minutes > 0 ? ` en ${minutes} minuten` : ''}`;
