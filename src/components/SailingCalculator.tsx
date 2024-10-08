@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/SailingCalculator.tsx
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -18,8 +17,6 @@ interface Settings {
   maxSailSpeed: number;
   maxMotorSpeed: number;
   defaultFuelConsumption: number;
-  defaultStartTime: string;
-  defaultArrivalTime: string;
   defaultDistance: number;
   defaultSailSpeed: number;
   defaultMotorSpeed: number;
@@ -39,8 +36,6 @@ const SailingCalculator: React.FC = () => {
           maxSailSpeed: 20,
           maxMotorSpeed: 30,
           defaultFuelConsumption: 5,
-          defaultStartTime: '08:00',
-          defaultArrivalTime: '12:00',
           defaultDistance: 25,
           defaultSailSpeed: 5,
           defaultMotorSpeed: 8,
@@ -50,15 +45,12 @@ const SailingCalculator: React.FC = () => {
   });
 
   const saveSettings = (newSettings: Settings) => {
-    // Only save the default settings, excluding any 'live' runtime variables
     const settingsToSave = {
       useMetric: newSettings.useMetric,
       maxDistance: newSettings.maxDistance,
       maxSailSpeed: newSettings.maxSailSpeed,
       maxMotorSpeed: newSettings.maxMotorSpeed,
       defaultFuelConsumption: newSettings.defaultFuelConsumption,
-      defaultStartTime: newSettings.defaultStartTime,
-      defaultArrivalTime: newSettings.defaultArrivalTime,
       defaultDistance: newSettings.defaultDistance,
       defaultSailSpeed: newSettings.defaultSailSpeed,
       defaultMotorSpeed: newSettings.defaultMotorSpeed,
@@ -67,12 +59,12 @@ const SailingCalculator: React.FC = () => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settingsToSave));
   };
 
-  function handleSettingsUpdate(newSettings: Settings) {
+  const handleSettingsUpdate = (newSettings: Settings) => {
     console.log('Updating settings:', newSettings);
     setSettings(newSettings);
     saveSettings(newSettings);
     formikRef.current?.setFieldValue('fuelConsumption', newSettings.defaultFuelConsumption);
-  }
+  };
 
   const validationSchema = Yup.object({
     startTime: Yup.date().required('Starttijd is verplicht'),
@@ -106,15 +98,18 @@ const SailingCalculator: React.FC = () => {
 
   const formikRef = useRef<FormikProps<any>>(null);
 
-  const parseTimeString = (timeStr: string): Date => {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(minutes);
-    date.setSeconds(0);
-    date.setMilliseconds(0);
-    date.setFullYear(2000, 0, 1);
-    return date;
+  const getCurrentTime = (): Date => {
+    const now = new Date();
+    now.setSeconds(0, 0); // Reset seconds and milliseconds
+    return now;
+  };
+
+  const getRoundedArrivalTime = (): Date => {
+    const now = getCurrentTime();
+    const arrivalTime = new Date(now);
+    arrivalTime.setHours(arrivalTime.getHours() + 4);
+    arrivalTime.setMinutes(0, 0, 0); // Round to the next whole hour
+    return arrivalTime;
   };
 
   const handleCalculate = (values: any) => {
@@ -140,8 +135,8 @@ const SailingCalculator: React.FC = () => {
       <Formik
         innerRef={formikRef}
         initialValues={{
-          startTime: parseTimeString(settings.defaultStartTime),
-          arrivalTime: parseTimeString(settings.defaultArrivalTime),
+          startTime: getCurrentTime(),
+          arrivalTime: getRoundedArrivalTime(),
           distance: settings.defaultDistance,
           fuelConsumption: settings.defaultFuelConsumption,
           sailSpeed: settings.defaultSailSpeed,
@@ -154,7 +149,6 @@ const SailingCalculator: React.FC = () => {
         {(formikProps) => {
           const { values } = formikProps;
 
-          // eslint-disable-next-line react-hooks/rules-of-hooks
           useEffect(() => {
             console.log("Recalculation triggered:");
             console.log("startTime:", values.startTime);
@@ -164,13 +158,13 @@ const SailingCalculator: React.FC = () => {
             console.log("sailSpeed:", values.sailSpeed);
             console.log("motorSpeed:", values.motorSpeed);
             console.log("useMetric:", values.useMetric);
-            
+
             if (formikProps.isValid) {
               handleCalculate(formikProps.values);
             } else {
               setResult('');
             }
-          }, [values.startTime, values.arrivalTime, values.distance, values.fuelConsumption, values.sailSpeed, values.motorSpeed, values.useMetric, formikProps.isValid, formikProps.values]);
+          }, [values.startTime, values.arrivalTime, values.distance, values.fuelConsumption, values.sailSpeed, values.motorSpeed, values.useMetric, formikProps.isValid]);
 
           return (
             <Form>
