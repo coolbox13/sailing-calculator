@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/SailingCalculator.tsx
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -153,6 +154,7 @@ const SailingCalculator: React.FC = () => {
         {(formikProps) => {
           const { values } = formikProps;
 
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           useEffect(() => {
             console.log("Recalculation triggered:");
             console.log("startTime:", values.startTime);
@@ -168,16 +170,7 @@ const SailingCalculator: React.FC = () => {
             } else {
               setResult('');
             }
-          }, [
-            values.startTime,
-            values.arrivalTime,
-            values.distance,
-            values.fuelConsumption,
-            values.sailSpeed,
-            values.motorSpeed,
-            values.useMetric,
-            formikProps.isValid,
-          ]);
+          }, [values.startTime, values.arrivalTime, values.distance, values.fuelConsumption, values.sailSpeed, values.motorSpeed, values.useMetric, formikProps.isValid, formikProps.values]);
 
           return (
             <Form>

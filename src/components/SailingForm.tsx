@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/SailingForm.tsx
 
 import React from 'react';
-import { TextField, Grid, Switch, FormControlLabel } from '@mui/material';
+import { TextField, Grid, Switch, FormControlLabel, IconButton } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { Field, FormikProps } from 'formik';
+import { Add, Remove } from '@mui/icons-material';
 
 interface SailingFormProps {
   formikProps: FormikProps<any>;
@@ -12,6 +14,47 @@ interface SailingFormProps {
 
 const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
   const { values, errors, touched, setFieldValue } = formikProps;
+
+  const handleIncrement = (fieldName: string, increment: number) => {
+    const currentValue = values[fieldName];
+    const newValue = Math.round((currentValue + increment) * 10) / 10; // Round to one decimal place
+    setFieldValue(fieldName, newValue);
+  };
+
+  const renderNumericField = (name: string, label: string, min = 0, max = 100) => (
+    <Field name={name}>
+      {({ field }: any) => (
+        <Grid container alignItems="center" spacing={1}>
+          <Grid item xs={8}>
+            <TextField
+              {...field}
+              label={label}
+              type="number"
+              fullWidth
+              inputProps={{
+                step: 0.1,
+                min,
+                max,
+              }}
+              error={touched[name] && !!errors[name]}
+              helperText={touched[name] && typeof errors[name] === 'string' ? errors[name] : undefined}
+              onWheel={(e) => e.currentTarget.blur()} // Disable wheel on inputs for mobile
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <IconButton onClick={() => handleIncrement(name, 0.1)} size="small">
+              <Add />
+            </IconButton>
+          </Grid>
+          <Grid item xs={2}>
+            <IconButton onClick={() => handleIncrement(name, -0.1)} size="small">
+              <Remove />
+            </IconButton>
+          </Grid>
+        </Grid>
+      )}
+    </Field>
+  );
 
   return (
     <>
@@ -26,6 +69,7 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
         label={values.useMetric ? 'Metrisch (km, km/u)' : 'Nautisch (zeemijl, knopen)'}
       />
       <Grid container spacing={2}>
+        {/* Start Time */}
         <Grid item xs={12} sm={6}>
           <TimePicker
             label="Starttijd"
@@ -41,6 +85,8 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             }}
           />
         </Grid>
+
+        {/* Arrival Time */}
         <Grid item xs={12} sm={6}>
           <TimePicker
             label="Gewenste aankomsttijd"
@@ -56,62 +102,25 @@ const SailingForm: React.FC<SailingFormProps> = ({ formikProps, settings }) => {
             }}
           />
         </Grid>
+
+        {/* Distance */}
         <Grid item xs={12} sm={6}>
-          <Field name="distance">
-            {({ field }: any) => (
-              <TextField
-                {...field}
-                label={`Afstand (${values.useMetric ? 'km' : 'zeemijl'})`}
-                type="number"
-                fullWidth
-                error={touched.distance && !!errors.distance}
-                helperText={touched.distance && typeof errors.distance === 'string' ? errors.distance : undefined}
-              />
-            )}
-          </Field>
+          {renderNumericField('distance', `Afstand (${values.useMetric ? 'km' : 'zeemijl'})`, 0, settings.maxDistance)}
         </Grid>
+
+        {/* Fuel Consumption */}
         <Grid item xs={12} sm={6}>
-          <Field name="fuelConsumption">
-            {({ field }: any) => (
-              <TextField
-                {...field}
-                label="Brandstofverbruik (liter/uur)"
-                type="number"
-                fullWidth
-                //defaultValue={settings.defaultFuelConsumption} // Ensure default value is set
-                error={touched.fuelConsumption && !!errors.fuelConsumption}
-                helperText={touched.fuelConsumption && typeof errors.fuelConsumption === 'string' ? errors.fuelConsumption : undefined}
-              />
-            )}
-          </Field>
+          {renderNumericField('fuelConsumption', 'Brandstofverbruik (liter/uur)', 0, 50)}
         </Grid>
+
+        {/* Sail Speed */}
         <Grid item xs={12} sm={6}>
-          <Field name="sailSpeed">
-            {({ field }: any) => (
-              <TextField
-                {...field}
-                label={`Zeilsnelheid (${values.useMetric ? 'km/u' : 'knopen'})`}
-                type="number"
-                fullWidth
-                error={touched.sailSpeed && !!errors.sailSpeed}
-                helperText={touched.sailSpeed && typeof errors.sailSpeed === 'string' ? errors.sailSpeed : undefined}
-              />
-            )}
-          </Field>
+          {renderNumericField('sailSpeed', `Zeilsnelheid (${values.useMetric ? 'km/u' : 'knopen'})`, 0, settings.maxSailSpeed)}
         </Grid>
+
+        {/* Motor Speed */}
         <Grid item xs={12} sm={6}>
-          <Field name="motorSpeed">
-            {({ field }: any) => (
-              <TextField
-                {...field}
-                label={`Motorsnelheid (${values.useMetric ? 'km/u' : 'knopen'})`}
-                type="number"
-                fullWidth
-                error={touched.motorSpeed && !!errors.motorSpeed}
-                helperText={touched.motorSpeed && typeof errors.motorSpeed === 'string' ? errors.motorSpeed : undefined}
-              />
-            )}
-          </Field>
+          {renderNumericField('motorSpeed', `Motorsnelheid (${values.useMetric ? 'km/u' : 'knopen'})`, 0, settings.maxMotorSpeed)}
         </Grid>
       </Grid>
     </>

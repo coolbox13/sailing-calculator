@@ -52,7 +52,7 @@ export const calculateSailingPlan = (params: CalculationParams): string => {
   const numerator = totalTimeInHours - (dist / motorSpd);
   const denominator = 1 - k;
 
-  let t_sail = denominator === 0 ? 0 : numerator / denominator;
+  const t_sail = denominator === 0 ? 0 : numerator / denominator;
   if (t_sail >= 0 && t_sail <= totalTimeInHours) {
     const t_motor = totalTimeInHours - t_sail;
     const distanceSailed = sailSpd * t_sail;
